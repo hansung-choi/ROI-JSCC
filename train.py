@@ -330,7 +330,6 @@ class Trainer():
             images = images.to(device)
             optimizer.zero_grad()
             ROI_Index = (random.randint(0, 3),random.randint(0, 3))
-            ROI_Index = (random.randint(1, 2),random.randint(1, 2))
             images_hat = model(images, ROI_Index =ROI_Index, SNR_info=cfg.SNR_info)
             total_loss = 0.
 
@@ -395,7 +394,6 @@ class Trainer():
             images = images.to(device)
             optimizer.zero_grad()
             ROI_Index = (random.randint(0, 3),random.randint(0, 3))
-            ROI_Index = (random.randint(1, 2),random.randint(1, 2))
             images_hat, decision = model(images, ROI_Index =ROI_Index, SNR_info=cfg.SNR_info)
             total_loss = 0.
 
