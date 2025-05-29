@@ -1,0 +1,30 @@
+---
+defaults:
+ - _self_
+ - data_info: DIV2K.yaml         # cifar10.yaml
+ 
+#output_save_name: train_${task_name}_${data_info.data_name}_SNR${SNR_info}_rcpp${rcpp}_N${model_capacity}_seed${random_seed}_${model_name}
+output_save_name: train_${model_name}_${data_info.data_name}_${chan_type}_SNR${SNR_info}_rcpp${rcpp}_${performance_metric} 
+hydra:
+  run:
+    dir: outputs/${output_save_name} #${now:%Y-%m-%d_%H-%M-%S}
+    
+chan_type: 'AWGN' #'AWGN', 'Rayleigh', 'none'
+performance_metric: 'PSNR' #'PSNR', 'SSIM'
+model_name: "LRConvJSCC"
+task_name: None
+loss_name: 0 # MSE, CE, MSE_CE
+optimizer_name: "Adam"
+#model_capacity: 32
+SNR_info: 1 # 1,4,7,10, random
+rcpp: 12
+random_seed: 0
+train_epoch: 1 #500, 1000, 2000, 10000
+total_max_epoch: 200  #500, 200
+learning_rate: 0.0001 # 0.001, 0.0001
+step_num: 2
+input_resolution: 0
+ratio: 0.5
+gamma: 0.5
+ratio1: 0.5
+ratio2: 0.5

@@ -1,0 +1,16 @@
+---
+data_name: "DIV2K"
+batch_size: 11 #11,9,8,20,32
+num_workers: 4 #4
+num_classes: 1
+color_channel: 3
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+  
+ 
