@@ -19,7 +19,7 @@ Experiment baselines are mainly based on the SOTA deepJSCC paper "Feature Import
 3. **SNR_info**: The channel SNR value, which can be one of **1, 4, 7, or 10** dB.
 4. **performance_metric**: The performance metric to be maximized, which can be **"PSNR"**.
 5. **data_info**: The dataset name (possible value: **"DIV2K"**).
-6. **model_name**: The model name, which can be one of the following: **"ConvJSCC", "ResJSCC", "SwinJSCC", "FAJSCC", "ROIJSCC", "ROIJSCCwoRB", "FAJSCCwRLB","FAJSCCwRB", or "FAJSCCwRL"        **.
+6. **model_name**: The model name, which can be one of the following: **"ConvJSCC", "ResJSCC", "SwinJSCC", "FAJSCC", "ROIJSCC", "ROIJSCCwoRB", "FAJSCCwRLB","FAJSCCwRB", or "FAJSCCwRL"**.
 
 
 ### Example of training a model.
