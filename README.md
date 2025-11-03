@@ -30,12 +30,12 @@ Experiment baselines are mainly based on the SOTA deepJSCC paper "Feature Import
 ### Example of experimental results for "PSNR (ROI) and PSNR (Avg) Results".
 **You can obtain test results for other settings by simply modifying the rcpp values in the main_total_eval_OAset1.py file**
 
-    python3 main_total_eval_OAset1.py chan_type="AWGN" performance_metric="PSNR" data_info=DIV2K
+    python3 main_total_eval_OAset.py chan_type="AWGN" performance_metric="PSNR" data_info=DIV2K
 
 ### Example of experimental results for "PSNR (ROI) Results of the ablation study".
 **You can obtain test results for other settings by simply modifying the rcpp values in the main_total_eval_Abset1.py file**
 
-    python3 main_total_eval_Abset1.py chan_type="AWGN" performance_metric="PSNR" data_info=DIV2K
+    python3 main_total_eval_Abset.py chan_type="AWGN" performance_metric="PSNR" data_info=DIV2K
 
 
 ### Example of experimental results for "Visual Inspection".
