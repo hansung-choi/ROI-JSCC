@@ -25,3 +25,5 @@ ratio: 0.5
 gamma: 0.5
 ratio1: 0.5
 ratio2: 0.5
+patch_d: 4
+test_resolution: 0

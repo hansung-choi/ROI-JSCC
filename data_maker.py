@@ -48,7 +48,7 @@ class DIV2Kdataset():
             os.mkdir(data_dir)
             
         self.trainset = DatasetFromFolder(data_dir + '/DIV2K/DIV2K_train_HR', transform=self.train_preprocessor)     
-        self.testset = Datasets(data_dir + '/DIV2K/DIV2K_valid_HR')              
+        self.testset = Datasets(data_dir + '/DIV2K/DIV2K_valid_HR')
         self.visualset = DatasetFromFolder(data_dir + '/kodak', transform=self.visual_preprocessor)
 
 
@@ -59,6 +59,11 @@ class DIV2Kdataset():
         
         self.visualloader = torch.utils.data.DataLoader(dataset=self.visualset, batch_size=1,shuffle=False,
                                                        num_workers=1,pin_memory=True,drop_last=False)
+        
+        if cfg.test_resolution >=100:
+            self.test_preprocessor2 = transforms.Compose([transforms.CenterCrop((cfg.test_resolution,cfg.test_resolution)),transforms.ToTensor(),transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+            self.testset = DatasetFromFolder(data_dir + '/DIV2K/DIV2K_valid_HR', transform=self.test_preprocessor2) 
+            self.testloader =  torch.utils.data.DataLoader(dataset=self.testset,batch_size=1,shuffle=False)
 
 ##https://github.com/leftthomas/SRGAN/blob/master/data_utils.py
 def is_image_file(filename):

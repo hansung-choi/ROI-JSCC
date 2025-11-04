@@ -150,7 +150,7 @@ def save_rcpp_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp_l
 
 
 
-def save_SNR_performance_opt_Avg_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,option=None):
+def save_SNR_performance_opt_Avg_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,option=None,prefix=None):
     save_folder = "../../test_results/"
     if not os.path.exists(save_folder):
         os.mkdir(save_folder)
@@ -164,9 +164,12 @@ def save_SNR_performance_opt_Avg_plot(cfg,logger,total_eval_dict,model_name_list
     
     for model_name in model_name_list:
         plot_save_name += "_" + model_name
+    
+    if prefix:
+        plot_save_name = prefix + "_" + plot_save_name
 
 
-    color_list = ['b-','r-','g-','c-','m-']
+    color_list = ['b-','r-','g-','c-','m-','y-','k-']
     
     plt.rcParams["figure.figsize"] = (14,4) #(14,8), (14,5), (14,4)
     
@@ -189,7 +192,7 @@ def save_SNR_performance_opt_Avg_plot(cfg,logger,total_eval_dict,model_name_list
         line_list.append(line)
     
     metric = cfg.performance_metric    
-    color_list = ['b--','r--','g--','c--','m--']
+    color_list = ['b--','r--','g--','c--','m--','y--','k--']
     for i, model_name in enumerate(model_name_list):
         valid_SNR_list = []
         valid_performance_list = []
@@ -209,15 +212,15 @@ def save_SNR_performance_opt_Avg_plot(cfg,logger,total_eval_dict,model_name_list
         lines += line
 
 
-    ax1.set_xlabel('SNR (dB)', fontsize=10) #  fontsize=20, 10
-    ax1.set_ylabel(cfg.performance_metric, fontsize=10)
+    ax1.set_xlabel('SNR (dB)', fontsize=18) #  fontsize=20, 10
+    ax1.set_ylabel(cfg.performance_metric, fontsize=18)
     plt.xticks( fontsize=10) # fontsize=14
     plt.yticks(fontsize=10)
 
     labels = [l.get_label() for l in lines]
-    ax1.legend(lines, labels, loc='upper left', bbox_to_anchor=(1.2, 1.0), fontsize=10)
+    ax1.legend(lines, labels, loc='upper left', bbox_to_anchor=(1.2, 1.0), fontsize=12)
     plt.tight_layout(rect=[0,0,0.6,0.8])
-    plt.title(f'CPP=1/{rcpp}', fontdict = {'fontsize' : 10})  # 'fontsize' : 20, 10 
+    plt.title(f'{cfg.chan_type}, CPP=1/{rcpp}', fontdict = {'fontsize' : 18})  # 'fontsize' : 20, 10, 12
 
     save_name = save_folder + plot_save_name + ".pdf"
     if save_name:
@@ -268,15 +271,15 @@ def save_SNR_performance_Ab_plot(cfg,logger,total_eval_dict,model_name_list,rcpp
     for line in line_list:
         lines += line
 
-    ax1.set_xlabel('SNR (dB)', fontsize=10) #  fontsize=20, 10
-    ax1.set_ylabel(cfg.performance_metric, fontsize=10)
+    ax1.set_xlabel('SNR (dB)', fontsize=18) #  fontsize=20, 10
+    ax1.set_ylabel(cfg.performance_metric, fontsize=18)
     plt.xticks( fontsize=10) # fontsize=14
     plt.yticks(fontsize=10)
 
     labels = [l.get_label() for l in lines]
-    ax1.legend(lines, labels, loc='upper left', bbox_to_anchor=(1.2, 1.0), fontsize=10)
+    ax1.legend(lines, labels, loc='upper left', bbox_to_anchor=(1.2, 1.0), fontsize=12)
     plt.tight_layout(rect=[0,0,0.6,0.8])
-    plt.title(f'CPP=1/{rcpp}', fontdict = {'fontsize' : 10})  # 'fontsize' : 20, 10 
+    plt.title(f'{cfg.chan_type}, CPP=1/{rcpp}', fontdict = {'fontsize' : 18})  # 'fontsize' : 20, 10
 
 
     save_name = save_folder + plot_save_name + ".pdf"
@@ -286,7 +289,7 @@ def save_SNR_performance_Ab_plot(cfg,logger,total_eval_dict,model_name_list,rcpp
     logger.info(f'{plot_save_name} is saved')
     
     
-def save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,option=None):
+def save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,option=None,prefix=None):
     save_folder = "../../test_results/"
     if not os.path.exists(save_folder):
         os.mkdir(save_folder)
@@ -300,6 +303,10 @@ def save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,S
     
     for model_name in model_name_list:
         table_save_name += "_" + model_name
+
+    if prefix:
+        table_save_name = prefix + "_" + table_save_name
+
 
     save_name = save_folder + table_save_name + ".csv"
     
@@ -438,7 +445,6 @@ def save_plot_legend_type1(cfg,logger,model_name_list,plot_name=None,ncol=5):
         plt.savefig(save_name)
     plt.clf()
     logger.info(f'{plot_save_name} is saved')
-
 
 
 def save_plot_legend_type2(cfg,logger,model_name_list,plot_name=None,ncol=5):

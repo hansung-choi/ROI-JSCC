@@ -12,7 +12,7 @@ import os
 @hydra.main(version_base = '1.1',config_path="configs",config_name='model_eval')
 def main(cfg: DictConfig):
     logger = logging.getLogger(__name__)
-    
+    #cfg.patch_d = 4 #This sets the ROI patch setting, default is 4. 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logger.info(f'---------------------------------------------------------------')
     logger.info(f'device: {device}')
@@ -26,11 +26,10 @@ def main(cfg: DictConfig):
     random.seed(random_seed_num)
     
     # make data_info
+    #cfg.test_resolution = 128 This sets the resolution of test data. If we do not set, we use full resolution test data
     data_info = DataMaker(cfg)        
 
     model_name_list = ["ROIJSCC","FAJSCC","SwinJSCC","ResJSCC","ConvJSCC"]    
-
-
 
 
     rcpp_list=[12]
@@ -42,15 +41,10 @@ def main(cfg: DictConfig):
 
     for rcpp in rcpp_list:
         save_SNR_performance_opt_Avg_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROI")  #Option + Average performance    
-        save_SNR_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list)        
-        save_SNR_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROI")        
-        save_SNR_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROP")        
-        save_SNR_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"RONI")
     
         save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list)
         save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROI")
-        #save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROP")
-        #save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"RONI")
+
 
         
     

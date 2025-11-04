@@ -62,6 +62,15 @@ def get_loaded_model(cfg,logger,model_name,rcpp,SNR):
     random_seed_num = cfg.random_seed
     random_num = str(random_seed_num).zfill(3)
     
+    if model_name in ["ROIJPEG2000","JPEG2000"]:
+        model = ModelMaker(cfg)
+        logger.info(f'{model_name} for cpp: 1/{cfg.rcpp} and SNR:{cfg.SNR_info}')
+        return model
+    
+    
+    if cfg.model_name in ["ROIJSCCall","ROIJSCCnone"]:
+        model_name = "ROIJSCC"
+    
     save_dir = "../../saved_models/"    
     save_name = f"{task}_{data}_{chan_type}_SNR{SNR}_rcpp{rcpp}_{metric}_{model_name}.pt"
     save_name_backup = f"{task}_{data}_{chan_type}_SNR{SNR}_rcpp{rcpp}_{metric}_{model_name}_backup.pt"
@@ -114,12 +123,21 @@ def get_specific_model_result_dict(cfg: DictConfig, logger, model, trainloader,t
     evaluater = ModelEvaluater(cfg)
 
     evaluation_dictionary = evaluater.one_epoch_eval(cfg, logger, model, trainloader, testloader, criterion)
-    GFlops = cal_flops(cfg, logger, model)
-    evaluation_dictionary['GFlops'] = GFlops
-    Mmemory = cal_MB(cfg, logger, model)
-    evaluation_dictionary['Mmemory'] = Mmemory
-    Mparams = get_n_model_params(cfg, logger, model)
-    evaluation_dictionary['Mparams'] = Mparams #number of parameters of the model
+    #Note that below three values are meaningless for JPEG2000, since we use JPEG2000 in the independent CMD subprocess.
+    if cfg.model_name in ["ROIJPEG2000","JPEG2000"]:
+        GFlops = 0.1 #dummy info
+        evaluation_dictionary['GFlops'] = GFlops
+        Mmemory = cal_MB(cfg, logger, model)
+        evaluation_dictionary['Mmemory'] = Mmemory
+        Mparams = get_n_model_params(cfg, logger, model)
+        evaluation_dictionary['Mparams'] = Mparams #number of parameters of the model
+    else:    
+        GFlops = cal_flops(cfg, logger, model)
+        evaluation_dictionary['GFlops'] = GFlops
+        Mmemory = cal_MB(cfg, logger, model)
+        evaluation_dictionary['Mmemory'] = Mmemory
+        Mparams = get_n_model_params(cfg, logger, model)
+        evaluation_dictionary['Mparams'] = Mparams #number of parameters of the model
 
     logger.info(f'---------------------------------------------------------------')
     time_elapsed = time.time() - since
@@ -148,8 +166,7 @@ def get_model_eval_dict(cfg,logger,model_name,rcpp,SNR):
         data_info = DataMaker(cfg)
            
         # make criterion
-        model.d = 4
-        d = model.d
+        d = cfg.patch_d
         criterion = LossMaker(cfg,d)    
 
         evaluation_dictionary = get_specific_model_result_dict(cfg, logger, model, data_info.trainloader,data_info.testloader, criterion)

@@ -16,6 +16,7 @@ def cal_flops(cfg, logger, model):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     H, W = cfg.input_resolution
     H, W = 512,768  # resolution of Kodak image data
+    #H, W = 1024,1024  # resolution of large image data
     input_image = torch.rand(1,3,H,W).float()
     input_image = input_image.to(device) 
     model.to(device)    
@@ -64,8 +65,21 @@ def eval_model(cfg: DictConfig, logger, model, trainloader,testloader, criterion
     evaluater = ModelEvaluater(cfg)
 
     evaluation_dictionary = evaluater.one_epoch_eval(cfg, logger, model, trainloader, testloader, criterion)
-    GFlops = cal_flops(cfg, logger, model)
-    evaluation_dictionary['GFlops'] = GFlops
+    #Note that below three values are meaningless for JPEG2000, since we use JPEG2000 in the independent CMD subprocess.
+    if cfg.model_name in ["ROIJPEG2000","JPEG2000"]:
+        GFlops = 0.1 #dummy info
+        evaluation_dictionary['GFlops'] = GFlops
+        Mmemory = cal_MB(cfg, logger, model)
+        evaluation_dictionary['Mmemory'] = Mmemory
+        Mparams = get_n_model_params(cfg, logger, model)
+        evaluation_dictionary['Mparams'] = Mparams #number of parameters of the model
+    else:    
+        GFlops = cal_flops(cfg, logger, model)
+        evaluation_dictionary['GFlops'] = GFlops
+        Mmemory = cal_MB(cfg, logger, model)
+        evaluation_dictionary['Mmemory'] = Mmemory
+        Mparams = get_n_model_params(cfg, logger, model)
+        evaluation_dictionary['Mparams'] = Mparams #number of parameters of the model
 
     save_model_evaluation_result_plot(cfg,evaluation_dictionary)
     
@@ -95,10 +109,11 @@ class ModelEvaluater():
 
     def eval_task(self,cfg: DictConfig, logger, model, trainloader, testloader, criterion):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        d = cfg.patch_d
         if cfg.performance_metric == "PSNR":
-            loss = ROIIT_MSE()
+            loss = ROIIT_MSE(d=d)
         elif cfg.performance_metric == "SSIM":
-            loss = ROIIT_SSIM()  
+            loss = ROIIT_SSIM(d=d)  
         criterion = loss
         
         
@@ -127,15 +142,20 @@ class ModelEvaluater():
                 images = images.to(device)
                 index_list = [0,1,2,3]
                 index_list = [1,2]
+                index_list = list(range(1, d - 1))
                 h = random.sample(index_list, 1)[0]
                 w = random.sample(index_list, 1)[0]
                 ROI_Index=(h,w)
+                #since = time.time()
                 #ROI_Index = (random.randint(1, 2),random.randint(1, 2))
                 with torch.no_grad():
                     images_hat = model(images, ROI_Index=ROI_Index,SNR_info=cfg.SNR_info)
                 total_loss = 0.
 
                 total_loss, performance, ROI_performance, ROP_performance, RONI_performance = criterion(images_hat, images, ROI_Index)
+                #logger.info(f'---------------------------------------------------------------')
+                #time_elapsed = time.time() - since
+                #logger.info(f'{count}-th image is reconstructed in {time_elapsed // 60:.0f}m { time_elapsed % 60:.0f}s')
 
 
 
@@ -312,7 +332,7 @@ class Visualizer():
         return cpu_images_hat
 
     def visualize_IT_patchwise_test_result(self, cfg, model, images, test_SNR_info,save_name):
-        d = 4
+        d = cfg.patch_d
         patch_division_info = [[i for i in range(d)] for j in range(d)]
         B,C,H,W = images.shape
         h = H//64 #//2

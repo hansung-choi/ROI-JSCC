@@ -8,6 +8,9 @@ def get_model_info(cfg):
     model_info['rcpp'] = cfg.rcpp #reverse of channel per pixel
     model_info['window_size'] = 8
     model_info['ratio'] = 0.5
+    model_info['patch_d'] = cfg.patch_d
+    model_info['SNR_info'] = cfg.SNR_info
+  
     cfg.ratio = model_info['ratio'] #importance ratio
     model_info['gamma'] = 0.5
     cfg.gamma = model_info['gamma']
@@ -33,8 +36,24 @@ def get_model_info(cfg):
     elif cfg.model_name == "FAJSCCwRL" or cfg.model_name == "FAJSCCwRB" or cfg.model_name == "FAJSCCwRLB":
         model_info['n_feats_list'] = [40,60,80,260] 
     elif cfg.model_name == "ROIJSCCwoRB":
-        model_info['n_feats_list'] = [40,60,80,260] 
-
+        model_info['n_feats_list'] = [40,60,80,260]
+    elif cfg.model_name == "ROIJSCCall":
+        model_info['n_feats_list'] = [40,60,80,260]
+        model_info['ratio1'] = 1.0
+        cfg.ratio1 = model_info['ratio1']
+        model_info['ratio2'] = 1.0
+        cfg.ratio2 = model_info['ratio2']
+    elif cfg.model_name == "ROIJSCCnone":
+        model_info['n_feats_list'] = [40,60,80,260]
+        model_info['n_feats_list'] = [40,60,80,260]
+        model_info['ratio1'] = 0.0
+        cfg.ratio1 = model_info['ratio1']
+        model_info['ratio2'] = 0.0
+        cfg.ratio2 = model_info['ratio2']         
+    elif cfg.model_name == "JPEG2000":
+        dummy=1
+    elif cfg.model_name == "ROIJPEG2000":
+        dummy=1
     else:
         raise ValueError(f'n_feats_list for {cfg.model_name} model is not implemented yet')
 
@@ -65,8 +84,14 @@ def ModelMaker(cfg):
     elif cfg.model_name == "FAJSCCwRLB": #with ROI focusing loss + bandwidth
         model = FAJSCCwRB(model_info)        
     elif cfg.model_name == "ROIJSCCwoRB":
-        model = ROIJSCCwoRB(model_info)    
-    
+        model = ROIJSCCwoRB(model_info)
+    elif cfg.model_name in ["ROIJSCCall","ROIJSCCnone"]:
+        model = ROIJSCC(model_info)
+        
+    elif cfg.model_name == "JPEG2000":
+        model = JPEG2000(model_info)
+    elif cfg.model_name == "ROIJPEG2000":
+        model = ROIJPEG2000(model_info)            
     else:
         raise ValueError(f'{cfg.model_name} model is not implemented yet')
     return model

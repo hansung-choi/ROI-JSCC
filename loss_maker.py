@@ -18,9 +18,12 @@ def get_task_info(cfg):
         cfg.task_name = "FAIT"        
     elif cfg.model_name == "ROIJSCC":
         cfg.task_name = "ROIIT"
- 
-        
-        
+    elif cfg.model_name in ["JPEG2000"]:
+        cfg.task_name = "ImageTransmission"
+    elif cfg.model_name in ["ROIJPEG2000"]:
+        cfg.task_name = "ROIIT"   
+    
+            
     elif cfg.model_name == "FAJSCCwRL": #with ROI focusing loss
         cfg.task_name = "FAGIT"
     elif cfg.model_name == "FAJSCCwRB": #with ROI focusing bandwidth
@@ -30,6 +33,9 @@ def get_task_info(cfg):
         
     elif cfg.model_name == "ROIJSCCwoRB":
         cfg.task_name = "ROIIT"
+    elif cfg.model_name in ["ROIJSCCall","ROIJSCCnone"]:
+        cfg.task_name = "ROIIT"
+    
           
         
     else:
@@ -70,8 +76,9 @@ def get_loss_info(cfg):
     else:
         raise ValueError(f'loss function for {cfg.task_name} task is not implemented yet')       
 
-def LossMaker(cfg,d=4): #cfg: DictConfig
-    get_loss_info(cfg)
+def LossMaker(cfg,d_): #cfg: DictConfig
+    d = cfg.patch_d
+    get_loss_info(cfg)    
     if cfg.loss_name == "IT_MSE":
         loss = IT_MSE()
     elif cfg.loss_name == "IT_SSIM":
@@ -81,13 +88,13 @@ def LossMaker(cfg,d=4): #cfg: DictConfig
     elif cfg.loss_name == "FAIT_SSIM":
         loss = FAIT_SSIM()
     elif cfg.loss_name == "ROIIT_MSE":
-        loss = ROIIT_MSE()
+        loss = ROIIT_MSE(d=d)
     elif cfg.loss_name == "ROIIT_SSIM":
-        loss = ROIIT_SSIM()
+        loss = ROIIT_SSIM(d=d)
     elif cfg.loss_name == "FAGIT_MSE":
-        loss = FAGIT_MSE()
+        loss = FAGIT_MSE(d=d)
     elif cfg.loss_name == "FAGIT_SSIM":
-        loss = FAGIT_SSIM()  
+        loss = FAGIT_SSIM(d=d)  
   
     else:
         raise ValueError(f'{cfg.loss_name} is not implemented yet')

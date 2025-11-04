@@ -29,7 +29,7 @@ def main(cfg: DictConfig):
     data_info = DataMaker(cfg)        
 
     # comparison for ablation study
-    model_name_list = ["ROIJSCC","ROIJSCCwoRB","FAJSCCwRLB","FAJSCCwRB","FAJSCCwRL","FAJSCC"]    
+    model_name_list = ["ROIJSCC","ROIJSCCwoRB","ROIJSCCnone","FAJSCCwRLB","FAJSCCwRB","FAJSCCwRL","FAJSCC"]    
 
 
 
@@ -44,15 +44,9 @@ def main(cfg: DictConfig):
     for rcpp in rcpp_list:    
         save_SNR_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list)
         save_SNR_performance_Ab_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROI")        
-        #save_SNR_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROI")        
-        #save_SNR_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROP")        
-        #save_SNR_performance_plot(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"RONI")
     
         save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list)
         save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROI")
-        #save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"ROP")
-        #save_SNR_performance_table(cfg,logger,total_eval_dict,model_name_list,rcpp,SNR_list,"RONI")
-
         
     
 if __name__ == '__main__':

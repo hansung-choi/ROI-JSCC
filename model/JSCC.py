@@ -1,6 +1,7 @@
 from .common_component import *
 from .Encoder import *
 from .Decoder import *
+from .JPEG2000 import jpeg2000_patchwise_compress
 import random
 
 class ConvJSCC(nn.Module):
@@ -150,9 +151,88 @@ class FAJSCC(nn.Module): # Feature Importance Aware JSCC
         return self.epoch
 
 
+class ROIJPEG2000(nn.Module): # Feature Importance Guide JSCC
+    def __init__(self, model_info):
+        super(ROIJPEG2000, self).__init__()
+        #self.epoch = 0
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = device
+        self.epoch = nn.Parameter(torch.zeros(1))
+        self.rcpp = model_info['rcpp'] #rcpp means reverse of channel per pixel
+        self.cpp = 1/self.rcpp
+        self.SNR = model_info['SNR_info']
+        
+        #bpp <= cpp*capacity by the nR<=kC 
+        #where n is the number of pixels, k is the number of transmitted symbols, C is the channel capacity.
+        self.bpp = self.cpp * cal_awgn_capacity(self.SNR)
+        self.eta = model_info['eta']
+
+        
+        # we assume total image is divided with 16 patches
+        decreased_RONI_resource = self.eta*self.bpp #decrease the number of transmitted pixels at Non Region of Interest, 0.1, 0.2
+        increased_ROI_resource = 7*decreased_RONI_resource #increase the number of transmitted pixels at Region of Interest
+        RONI_bpp = self.bpp - decreased_RONI_resource
+        ROI_bpp = self.bpp + increased_ROI_resource
+        self.bpp_list = [RONI_bpp,self.bpp,ROI_bpp]        
+        self.chan_type = model_info['chan_type']
+        
+        self.d = model_info['patch_d']  
+        
+
+    def forward(self, x,ROI_Index=(1,1), SNR_info=5): 
+        # Pathwise Rate allocation based on given patchwise bpp
+        device = x.device
+        B, C, H, W = x.size()
+        images=(x.clone().detach()+1)/2
+        #images = images.clamp(0.0, 1.0)
+        #To run JPEG2000, the tensor should be in CPU
+        images=images.cpu()
+        d = self.d
+        attention_mask = get_weighted_total_attention_mask(ROI_Index,B,d,d)
+
+        patch_wise_bpp = patch_bpp_allocation(attention_mask, self.bpp_list)
+        #print("patch_wise_bpp")
+        #print(patch_wise_bpp)       
+        
+        reconstructed_images = jpeg2000_patchwise_compress(images, patch_wise_bpp)
+        reconstructed_images = (reconstructed_images-0.5)/0.5
+        reconstructed_images = reconstructed_images.to(device)
+         
+        return reconstructed_images
 
 
+    def get_epoch(self):
+        return self.epoch
+    
+    def add_epoch(self,number=1):
+        with torch.no_grad():
+            self.epoch += number
+        return self.epoch
 
+class JPEG2000(ROIJPEG2000): # Feature Importance Guide JSCC
+    def __init__(self, model_info):
+        super(JPEG2000, self).__init__(model_info)
+        #self.epoch = 0
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = device
+        self.epoch = nn.Parameter(torch.zeros(1))
+        self.rcpp = model_info['rcpp'] #rcpp means reverse of channel per pixel
+        self.cpp = 1/self.rcpp
+        self.SNR = model_info['SNR_info']
+        
+        #bpp <= cpp*capacity by the nR<=kC 
+        #where n is the number of pixels, k is the number of transmitted symbols, C is the channel capacity.
+        self.bpp = self.cpp * cal_awgn_capacity(self.SNR)
+        self.eta = model_info['eta']
+
+        
+
+        self.bpp_list = [self.bpp,self.bpp,self.bpp]        
+        self.chan_type = model_info['chan_type']
+        
+        self.d = model_info['patch_d'] 
+        #self.d = 2
+        #print("self.bpp:",self.bpp)
 
 
 class ROIJSCC(nn.Module): # Feature Importance Guide JSCC
@@ -184,7 +264,7 @@ class ROIJSCC(nn.Module): # Feature Importance Guide JSCC
         self.channel = Channel(self.chan_type)
         self.Decoder = ROIDecoder(model_info,ROI_C)
         
-        self.d = 4
+        self.d = model_info['patch_d']  
         
 
     def forward(self, x,ROI_Index=(1,1), SNR_info=5): 
@@ -272,7 +352,7 @@ class FAJSCCwRB(nn.Module):  #FAJSCC, RB: ROI focusing bandwidth allocation, RL:
         self.channel = Channel(self.chan_type)
         self.Decoder = FADecoder(model_info,ROI_C)
         
-        self.d = 4
+        self.d = model_info['patch_d']  
 
     def forward(self, x,ROI_Index=(1,1), SNR_info=5): 
         # Pathwise Rate allocation based on given patchwise rate
@@ -365,7 +445,7 @@ class ROIJSCCwoRB(ROIJSCC): # Feature Importance Guide JSCC
         self.channel = Channel(self.chan_type)
         self.Decoder = ROIDecoder(model_info,ROI_C)
         
-        self.d = 4
+        self.d = model_info['patch_d']  
         
 
 

@@ -534,6 +534,7 @@ def patch_rate_allocation(mask, channel_rate_list):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     patch_wise_importance = mask.clone().detach()
+    b,h,w = patch_wise_importance.size()
     patch_wise_importance = rearrange(patch_wise_importance,'b h w -> b (h w)')
     
     patch_wise_importance = patch_wise_importance.clone().detach().to(device)
@@ -542,6 +543,7 @@ def patch_rate_allocation(mask, channel_rate_list):
     
     # the number of patch for each rate allocation
     rate_wise_patch_num_list = [7,8,1]
+    rate_wise_patch_num_list = [7,int(h*w)-8,1] #conserve average patchwise rates for h,w>=4.
     
     # the cumulative number of patches for rate allocation
     rate_allocation_standard_list = [sum(rate_wise_patch_num_list[:i+1]) for i in range(len(rate_wise_patch_num_list))]
@@ -560,6 +562,37 @@ def patch_rate_allocation(mask, channel_rate_list):
     # patch_wise_rate: B X d^2, each element means appropriate rate allocation for each patch.
     #print("patch_wise_rate.float().mean(dim=-1):",patch_wise_rate.float().mean(dim=-1))
     
+    return patch_wise_rate
+
+def patch_bpp_allocation(mask, bpp_list):
+    # Assume mask: B ¡¿ H ¡¿ W
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    patch_wise_importance = mask.clone().detach().to(device)
+    b, h, w = patch_wise_importance.size()
+    patch_wise_importance = rearrange(patch_wise_importance, 'b h w -> b (h w)')
+    
+    # Sort patches by importance
+    sorted_importance, sort_index = patch_wise_importance.sort(dim=-1, descending=False)
+    
+    # Allocate patch numbers for each rate
+    rate_wise_patch_num_list = [7, int(h*w) - 8, 1]
+    rate_allocation_standard_list = [sum(rate_wise_patch_num_list[:i+1]) for i in range(len(rate_wise_patch_num_list))]
+    
+    # Initialize as float tensor
+    patch_wise_rate = torch.zeros_like(patch_wise_importance).float()
+    
+    # Assign rate values based on sorted importance
+    for rate_num in range(len(bpp_list)):
+        if rate_num == 0:
+            interest_sort_index = sort_index[:, :rate_allocation_standard_list[rate_num]]
+        else:
+            interest_sort_index = sort_index[:, rate_allocation_standard_list[rate_num - 1]:rate_allocation_standard_list[rate_num]]
+        for i in range(b):
+            patch_wise_rate[i, interest_sort_index[i]] = bpp_list[rate_num]
+    
+    # Reshape back to B ¡¿ H ¡¿ W
+    patch_wise_rate = rearrange(patch_wise_rate, 'b (h w) -> b h w', h=h, w=w)
     return patch_wise_rate
 
        
@@ -622,6 +655,11 @@ def BPCHW_to_BPLC(z_BPCHW):
     z_BPLC = z_BPCHW.flatten(3).permute(0,1, 3, 2)
     return z_BPLC    
 
+def cal_awgn_capacity(SNR):
+    #input: SNR (dB)
+    #ans: complex AWGN channel capacity per symsbol or channel.
+    ans = np.log2(1+10**(SNR/10))
+    return ans
 
 
 if __name__ == '__main__':

@@ -26,10 +26,9 @@ def main(cfg: DictConfig):
     save_plot_legend_type1(cfg,logger,model_name_list,plot_name='_main_',ncol=4)
 
 
-    model_name_list = ["ROI-JSCC","ROI-JSCC w/o RB","FAJSCC w/ RLB","FAJSCC w/ RB","FAJSCC w/ RL","FAJSCC"]
+    model_name_list = ["ROI-JSCC","ROI-JSCC w/o RB","ROI-JSCC-none","FAJSCC w/ RLB","FAJSCC w/ RB","FAJSCC w/ RL","FAJSCC"]
     save_plot_legend_type2(cfg,logger,model_name_list,plot_name='_ablation_',ncol=3)
     save_plot_legend_type2(cfg,logger,model_name_list,plot_name='_ablation_',ncol=2)
-
     
     
 if __name__ == '__main__':
