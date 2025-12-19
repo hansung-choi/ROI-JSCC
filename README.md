@@ -1,6 +1,6 @@
 # ROI-JSCC
 
-Implementations of main experiments for the paper "Region-of-Interest-Guided Deep Joint Source-Channel Coding for Image Transmission"
+Implementations of main experiments for the paper "Region-of-Interest-Guided Deep Joint Source-Channel Coding for Image Transmission" published in IEEE Communications Letters (https://ieeexplore.ieee.org/document/11275960).
 
 Experiment baselines are mainly based on the SOTA deepJSCC paper "Feature Importance-Aware Deep Joint Source-Channel Coding for Computationally Efficient and Adjustable Image Transmission".
 
